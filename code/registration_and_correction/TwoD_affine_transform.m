@@ -1,5 +1,8 @@
 %% Calculate 2D affine tranformation for 2 sets of fiducial coordinates
 
+% Input : fiducial coordinates in TS format
+% Output: affine_transform.mat to use with apply_affine_transform.m
+
 % Load the bead coordinates from both channels
 
 close all, clear, clc
