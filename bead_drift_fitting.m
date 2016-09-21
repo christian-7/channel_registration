@@ -3,13 +3,18 @@ clc
 close all
 %% Open data
 
-filename_peaks='Au_fiducial_Roi2_2_PKF';
+nameC1='2016-08-19_MitoRNAGran_A750_FOV_2_MMStack_Pos0_locResults_cleaned.dat';
+locsC1=dlmread(nameC1,',',1,0);
 
-filename_peaks2=[filename_peaks '.prm'];
-peaks=dlmread(filename_peaks2,',',1,0);
+% Find the right Columns
+file = fopen(nameC1);
+line = fgetl(file);
+h = regexp( line, ',', 'split' );
 
-peaks(:,3)=peaks(:,3)*160;
-peaks(:,4)=peaks(:,4)*160;
+x = strmatch('x [nm]',h);
+y = strmatch('y [nm]',h);
+LL = strmatch('loglikelihood',h);
+
 
 fprintf('\n -- Data loaded --\n')
 
