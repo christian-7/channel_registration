@@ -1,4 +1,12 @@
-%  Load the bead coordinates from both channels
+%% Test different point transformations
+
+% affine, polynomial, lwm
+
+% LWM from : L.S. Churchman, J.A. Spudich, Single-molecule high-resolution colocalization of single probes, Cold Spring Harb. Protoc. 2012 (2012) 242–245
+
+clear, clc, close all
+
+%%  Load the test data. Bead coordinates from both channels
 
 cd('.\test_data');
 
@@ -18,61 +26,112 @@ yCol = strmatch('"y [nm]"',h);
 fixed = peaksC1(:,2:3);
 moving = peaksC2(:,2:3);
 
-%% 
+%% Affine transformation
 
-tform = estimateGeometricTransform(moving,fixed,'affine')
+[IDX] = rangesearch(moving,fixed,500); % find the point in moving that is closest to the point in fixed
 
-[x,y] = transformPointsForward(tform,moving(:,1), moving(:,2))
+for i = 1:length(IDX);
 
-figure;hold all;
-scatter(fixed(:,1),fixed(:,2),'gx');
-scatter(moving(:,1),moving(:,2),'ro')
-scatter(x,y,'rx')
+    moving_1(i,1) = moving(IDX{i,1},1);
+    moving_1(i,2) = moving(IDX{i,1},2);
 
-%% second order polynomial warp transform
-% 
-% fixed = [1.5 4; 3 2; 5 3; 4 4; 5 5; 6 6];
-% moving = [2 3; 3.5 4; 4 5; 5 6; 6 7; 7 8];
-% 
+end
 
-% First transformation
+tform = estimateGeometricTransform(moving_1,fixed,'affine');
 
-Tgr = cp2tform(fixed, moving, 'similarity');
-[xgt, ygt] = tformfwd(Tgr, fixed(:,1), fixed(:,2));
-afterFirstTF=[xgt ygt];
+[corrected_moving(:,1),corrected_moving(:,2)] = transformPointsForward(tform,moving_1(:,1), moving_1(:,2));
 
-% Second transformation
-% must be applied to the NN in the dataset
 
-% T_lwm = cp2tform(afterFirstTF,moving,'lwm',36);'polynomial',4
+for i = 1:length(fixed);
+    
+    TRE(:,i) = sqrt((fixed(i,1)-corrected_moving(i,1))^2 + (fixed(i,1)-corrected_moving(i,1))^2);
 
-T_lwm = cp2tform(afterFirstTF,moving,'polynomial',2);
-[xgt2, ygt2] = tformfwd(T_lwm, xgt, ygt);
-
-% tform = images.geotrans.PolynomialTransformation2D(moving,fixed,2)
- 
-% movingPointsEstimated = transformPointsInverse(tform,fixed);
+end
 
 figure
-scatter(fixed(:,1),fixed(:,2),5,'green');hold on;
-scatter(moving(:,1),moving(:,2),5,'red');hold on;
-scatter(xgt,ygt,5,'+');hold on;
-scatter(movingPointsEstimated(:,1),movingPointsEstimated(:,2),'*');hold on;
+scatter(fixed(:,1),fixed(:,2),'gx');hold on;
+scatter(moving_1(:,1),moving_1(:,2),'ro');hold on;
+scatter(corrected_moving(:,1),corrected_moving(:,2),'rx');hold on;
+legend('Fixed', 'Moving','Corrected');
+title(['TRE = ' num2str(mean(TRE))]);
+
+%% Using a polynomial transformation
+
+[IDX] = rangesearch(moving,fixed,500); % find the point in moving that is closest to the point in fixed
+
+for i = 1:length(IDX);
+
+    moving_1(i,1) = moving(IDX{i,1},1);
+    moving_1(i,2) = moving(IDX{i,1},2);
+
+end
+
+T_poly = fitgeotrans(fixed,moving_1,'polynomial',2);
+corrected_moving = transformPointsInverse(T_poly,moving_1);
+
+for i = 1:length(fixed);
+    
+    TRE(:,i) = sqrt((fixed(i,1)-corrected_moving(i,1))^2 + (fixed(i,1)-corrected_moving(i,1))^2);
+
+end
+
+figure
+scatter(fixed(:,1),fixed(:,2),'gx');hold on;
+scatter(moving_1(:,1),moving_1(:,2),'ro');hold on;
+scatter(corrected_moving(:,1),corrected_moving(:,2),'rx');hold on;
+legend('Fixed', 'Moving','Corrected');
+title(['TRE = ' num2str(mean(TRE))]);
+
+%% Using a local weihgted mean transformation
+
+[IDX] = rangesearch(moving,fixed,500); % find the point in moving that is closest to the point in fixed
+
+for i = 1:length(IDX);
+
+    moving_1(i,1) = moving(IDX{i,1},1);
+    moving_1(i,2) = moving(IDX{i,1},2);
+
+end
+
+T_lwm = fitgeotrans(fixed,moving_1,'lwm',10);
+
+corrected_moving = transformPointsInverse(T_lwm,moving_1);
 
 
-errorInFit = hypot(movingPointsEstimated(:,1)-moving(:,1),...
-                   movingPointsEstimated(:,2)-moving(:,2));
-               
-               
-               
+for i = 1:length(fixed);
+    
+    TRE(:,i) = sqrt((fixed(i,1)-corrected_moving(i,1))^2 + (fixed(i,1)-corrected_moving(i,1))^2);
 
-%% Rigid transform
+end
+
+figure('Position',[100 600 500 500])
+
+scatter(fixed(:,1),fixed(:,2),'gx');hold on;
+scatter(moving_1(:,1),moving_1(:,2),'ro');hold on;
+scatter(corrected_moving(:,1),corrected_moving(:,2),'rx');hold on;
+legend('Fixed', 'Moving','Corrected');
+title(['TRE = ' num2str(mean(TRE))]);
+box on; axis square
 
 
-
-% find same bead in both channels
-% calculate dX and dY for each frame
-% apply to dataset
+diff = [];
+diff = fixed - moving_1;
 
 
+figure('Position',[700 600 500 500])
+
+scatter(fixed(:,1),fixed(:,2),'gx');hold on;
+scatter(moving_1(:,1),moving_1(:,2),'ro');hold on;
+
+for i = 1:length(fixed);
+
+q = quiver(moving_1(i,1),moving_1(i,2),diff(i,1),diff(i,2)); hold on;
+q.Color = 'black'
+q.LineWidth = 1;
+q.MaxHeadSize = 2;
+
+box on; axis square
+
+title(['TRE = ' num2str(mean(TRE))]);
+end
 
