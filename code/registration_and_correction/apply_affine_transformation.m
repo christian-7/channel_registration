@@ -1,4 +1,4 @@
-%% Applies both the affine and the linear transform
+%% Applies both, the affine and the linear transform
 
 % Input:        A750 localization file, drift-corrected
 %               dx, dy
@@ -16,7 +16,7 @@ load('D:\Christian\GitHub\channel_registration\test_data\aff_transform.mat')
 
 % The script calculates the correction for the A750 channel
 
-filename_peaksc1 = '2016-08-19_MitoRNAGran_A750_FOV_5_MMStack_Pos0_locResults_DC';             % filename of TS output file
+filename_peaksc1 = 'A549_EGFR_A750_18_MMStack_Pos0_locResults_DC';             % filename of TS output file
 
 peaks=dlmread([filename_peaksc1 '.dat'],',',1,0);
 
@@ -27,6 +27,11 @@ h    = regexp( line, ',', 'split' );
 xCol        = strmatch('x [nm]',h);
 yCol        = strmatch('y [nm]',h);
 frameCol    = strmatch('frame',h);
+
+% xCol        = strmatch('"x [nm]"',h);
+% yCol        = strmatch('"y [nm]"',h);
+% frameCol    = strmatch('"frame"',h);
+
 
 fprintf('\n -- Data loaded --\n') 
 
@@ -45,6 +50,9 @@ fprintf('\n -- Transformation applied --\n')
 
 %% Apply linear transformation
 
+maxFrames = 15000;
+minFrames = 1;
+
 corr_Ch2 = peaks2;
 
 load('devX.mat')
@@ -54,8 +62,17 @@ for i=1:length(corr_Ch2(:,frameCol));
     
 frame = corr_Ch2(i,frameCol);
 
-corr_Ch2(i,xCol) = (corr_Ch2(i,xCol))-abs(dx(frame)-50);
-corr_Ch2(i,yCol) = (corr_Ch2(i,yCol))+abs(dy(frame)+50);
+if frame > maxFrames | frame <minFrames;
+    
+corr_Ch2(i,xCol) = (corr_Ch2(i,xCol));
+corr_Ch2(i,yCol) = (corr_Ch2(i,yCol));
+    
+else
+
+corr_Ch2(i,xCol) = (corr_Ch2(i,xCol)) - (dx(frame));
+corr_Ch2(i,yCol) = (corr_Ch2(i,yCol)) - (dy(frame));
+
+end
 
 clear frame
 

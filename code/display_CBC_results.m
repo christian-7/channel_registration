@@ -78,7 +78,7 @@ axis square;
 
 %% Figure option #2: Show Overlay of both channels and CA histograms
 
-figure('Position',[100 600 900 300])
+figure('Position',[100 600 1200 300])
 
 subplot(1,3,1);
 scatter(locsC1(:,xCol),locsC1(:,yCol),1,'red');hold on;
@@ -98,7 +98,7 @@ b.FaceColor = [0 0 0];
 b.EdgeColor = [0.5 0.5 0.5];
 b.LineWidth = 0.1;
 axis([-1.1 1.1 0 0.1])
-title(['C_A Histogram Channel 1 - ' num2str(sum(locsC1(:,CBC)>=0.7)/length(locsC1),'%.2f') ' colocalized']);
+title(['C_A Histogram Channel 1 - ' num2str(sum(locsC1(:,CBC)>=0.3)/length(locsC1),'%.2f') ' colocalized']);
 xlabel('C_A');
 ylabel('counts');
 box on;
@@ -111,7 +111,7 @@ b.FaceColor = [0 0 0];
 b.EdgeColor = [0.5 0.5 0.5];
 b.LineWidth = 0.1;
 axis([-1.1 1.1 0 0.1])
-title(['C_A Histogram Channel 2 - ' num2str(sum(locsC2(:,CBC)>=0.7)/length(locsC2),'%.2f') ' colocalized']);
+title(['C_A Histogram Channel 2 - ' num2str(sum(locsC2(:,CBC)>=0.3)/length(locsC2),'%.2f') ' colocalized']);
 xlabel('C_A');
 ylabel('counts');
 box on;
@@ -120,7 +120,7 @@ axis square;
 %% Figure option #3 : Calculate localization density
 tic
 
-NNdist=100; % neighbor distance in nm
+NNdist = 200; % neighbor distance in nm
 
 idx1 = rangesearch(locsC1(:,xCol:yCol),locsC1(:,xCol:yCol),NNdist);
 idx2 = rangesearch(locsC2(:,xCol:yCol),locsC2(:,xCol:yCol),NNdist);
@@ -139,14 +139,16 @@ end
 
 toc
 %% Figure option #3 :  Plot Density
+
+
 figure('Position',[100 100 1600 800])
 
-densityFilter = 20;
+densityFilter = 2;
 
 target1 = find(NoNindC1>densityFilter);
 target2 = find(NoNindC2>densityFilter);
         
-        ax1 = subplot(2,3,1)
+        ax1 = subplot(2,3,1);
 
 scatter(locsC1(target1,1),locsC1(target1,2),4,NoNindC1(target1),'o','filled');hold on;
 colormap(ax1,hot)
@@ -157,7 +159,7 @@ ylabel('nm');
 box on;
 
 
-        ax2 = subplot(2,3,2)
+        ax2 = subplot(2,3,2);
 
 scatter(locsC2(target2,1),locsC2(target2,2),6,NoNindC2(target2),'o','filled');hold on;
 colormap(ax2,hot)
@@ -167,7 +169,7 @@ xlabel('nm');
 ylabel('nm');
 box on;
 
-        ax3 = subplot(2,3,4)
+        ax3 = subplot(2,3,4);
 
 scatter(locsC1(target1,xCol),locsC1(target1,yCol),5,locsC1(target1,CBC),'filled');hold on;
 axis([min(locsC1(target1,1)) max(locsC1(target1,1)) min(locsC1(target1,2)) max(locsC1(target1,2))])
@@ -189,7 +191,7 @@ box on;
 axis square;
 colorbar; colormap(ax4,jet);
 
-        subplot(2,3,3)
+        subplot(2,3,3);
 
 bins = -1:0.05:1;
 b = bar(bins, hist(locsC1(target1,CBC),bins)/sum(hist(locsC1(target1,CBC),bins)));
@@ -203,7 +205,7 @@ ylabel('counts');
 box on;
 axis square;
 
-        subplot(2,3,6)
+        subplot(2,3,6);
 
 bins = -1:0.05:1;
 b = bar(bins, hist(locsC2(target2,CBC),bins)/sum(hist(locsC2(target2,CBC),bins)));
