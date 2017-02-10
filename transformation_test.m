@@ -26,6 +26,21 @@ yCol = strmatch('"y [nm]"',h);
 fixed = peaksC1(:,2:3);
 moving = peaksC2(:,2:3);
 
+%% Select Points from reference image
+
+cd('.\test_data');
+
+Ch1 = imread('A647_1.tif');
+Ch2 = imread('A750_1.tif');
+
+rgbIm = cat(3,Ch1,Ch2,zeros(size(Ch1)));
+imshow(rgbIm);
+
+[Ch1_Pts,Ch2_Pts]= cpselect(Ch1, Ch2,'Wait',true);
+
+fixed = Ch1_Pts;
+moving_1 = Ch2_Pts;
+
 %% Affine transformation
 
 [IDX] = rangesearch(moving,fixed,500); % find the point in moving that is closest to the point in fixed
@@ -93,7 +108,7 @@ for i = 1:length(IDX);
 
 end
 
-T_lwm = fitgeotrans(fixed,moving_1,'lwm',10);
+T_lwm = fitgeotrans(fixed,moving_1,'lwm',7);
 
 corrected_moving = transformPointsInverse(T_lwm,moving_1);
 
