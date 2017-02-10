@@ -13,9 +13,11 @@
 %           corrected dataset
 
 
-%% Load bead data and localization datasets
+%% Load bead data
 
-% Load the bead data
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Option1: Load the bead data % 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 cd('.\test_data');
 
@@ -35,11 +37,28 @@ yCol = strmatch('"y [nm]"',h);
 fixed = peaksC1(:,2:3);
 moving = peaksC2(:,2:3);
 
-% Load the localization data
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Option2:  Load the localization data %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % load from HDF input
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Option3:  Load the WF images of beads taken in each Channel %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+cd('.\test_data');
+
+Ch1 = imread('A647_1.tif');
+Ch2 = imread('A750_1.tif');
+
+rgbIm = cat(3,Ch1,Ch2,zeros(size(Ch1)));
+imshow(rgbIm);
+
+[Ch1_Pts,Ch2_Pts]= cpselect(Ch1, Ch2,'Wait',true);
+
+fixed = Ch1_Pts;
+moving_1 = Ch2_Pts;
 
 %% Calculate LWM transformation
 
